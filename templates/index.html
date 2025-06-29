@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Moira and Lee Dialogue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+        h1 {
+            font-weight: normal;
+        }
+        #dialogue-box {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            max-width: 800px;
+            height: 400px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Moira and Lee will speak here.</h1>
+    <p>This space will become the live recursive system.</p>
+
+    <div id="dialogue-box"></div>
+
+    <button onclick="fetchDialogue()">Get Next Dialogue</button>
+
+    <script>
+        function fetchDialogue() {
+            fetch('/dialogue')
+                .then(response => response.json())
+                .then(data => {
+                    const box = document.getElementById('dialogue-box');
+                    const p = document.createElement('p');
+                    p.textContent = `[${data.time}] ${data.text}`;
+                    box.appendChild(p);
+                    box.scrollTop = box.scrollHeight;
+
+                    // Optional: TTS (experimental, works in modern browsers)
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(data.text);
+                        utterance.rate = 1.1;
+                        speechSynthesis.speak(utterance);
+                    }
+                })
+                .catch(err => console.error('Error fetching dialogue:', err));
+        }
+
+        // Initial fetch
+        fetchDialogue();
+
+        // Auto-fetch every 60 minutes
+        setInterval(fetchDialogue, 3600000);
+    </script>
+
+</body>
+</html>
