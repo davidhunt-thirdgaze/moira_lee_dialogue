@@ -1,69 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Moira and Lee Dialogue</title>
+    <title>Moira & Lee Dialogue</title>
+    <meta http-equiv="refresh" content="60">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 20px;
+            font-family: monospace;
+            background-color: #111;
+            color: #f8f8f8;
+            padding: 40px;
         }
-        h1 {
-            font-weight: normal;
-        }
-        #dialogue-box {
-            background: #fff;
-            padding: 15px;
-            border: 1px solid #ccc;
-            max-width: 800px;
-            height: 400px;
-            overflow-y: scroll;
+        pre {
             white-space: pre-wrap;
+            background-color: #222;
+            padding: 20px;
+            border: 1px solid #555;
+            max-height: 80vh;
+            overflow-y: auto;
         }
-        button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            font-size: 16px;
+        input[type="text"] {
+            width: 60%;
+            padding: 10px;
+            font-size: 1em;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 1em;
         }
     </style>
 </head>
 <body>
-
-    <h1>Moira and Lee will speak here.</h1>
-    <p>This space will become the live recursive system.</p>
-
-    <div id="dialogue-box"></div>
-
-    <button onclick="fetchDialogue()">Get Next Dialogue</button>
-
-    <script>
-        function fetchDialogue() {
-            fetch('/dialogue')
-                .then(response => response.json())
-                .then(data => {
-                    const box = document.getElementById('dialogue-box');
-                    const p = document.createElement('p');
-                    p.textContent = `[${data.time}] ${data.text}`;
-                    box.appendChild(p);
-                    box.scrollTop = box.scrollHeight;
-
-                    // Optional: TTS (experimental, works in modern browsers)
-                    if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance(data.text);
-                        utterance.rate = 1.1;
-                        speechSynthesis.speak(utterance);
-                    }
-                })
-                .catch(err => console.error('Error fetching dialogue:', err));
-        }
-
-        // Initial fetch
-        fetchDialogue();
-
-        // Auto-fetch every 60 minutes
-        setInterval(fetchDialogue, 3600000);
-    </script>
-
+    <h2>Moira and Lee will speak here.<br>This space is a live recursive system.</h2>
+    <pre>{{ log }}</pre>
+    <form method="POST">
+        <input type="text" name="user_input" placeholder="Add your comment to the stream" required />
+        <input type="submit" value="Submit" />
+    </form>
 </body>
 </html>
