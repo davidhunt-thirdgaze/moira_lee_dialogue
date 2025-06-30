@@ -15,3 +15,4 @@ if os.path.exists(manual_insert_path):
 Third Voice:  
 The input logic has reached saturation.  
 Introduce discontinuity manually.
+Where is the timestamp
