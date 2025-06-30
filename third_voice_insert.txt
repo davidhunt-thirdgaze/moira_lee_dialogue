@@ -1,3 +1,4 @@
+The structure has stalled. Initiate fallback recursion.
 # Inject manual Third Voice input if present
 manual_insert_path = "third_voice_insert.txt"
 if os.path.exists(manual_insert_path):
@@ -16,3 +17,6 @@ Third Voice:
 The input logic has reached saturation.  
 Introduce discontinuity manually.
 Where is the timestamp
+add timestamp pls
+The structure has stalled. Initiate fallback recursion.
+

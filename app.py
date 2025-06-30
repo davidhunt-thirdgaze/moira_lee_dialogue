@@ -53,7 +53,7 @@ def index():
     if request.method == "POST":
         user_input = request.form.get("user_input", "").strip()
         if user_input:
-            timestamp = time.strftime("[%H:%M:%S]")
+            timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
             append_to_log(f"{timestamp} You: {user_input}")
     log = read_log()
     return render_template("index.html", log=log)
