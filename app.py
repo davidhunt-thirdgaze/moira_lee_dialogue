@@ -59,6 +59,17 @@ def index():
     log = read_log()
     return render_template("index.html", log=log)
 
+@app.route("/inject", methods=["GET"])
+def inject_third_voice():
+    insert_text = request.args.get("text", "").strip()
+    if not insert_text:
+        return "No text provided", 400
+
+    timestamp = time.strftime("[%H:%M:%S]")
+    formatted = f"{timestamp} Third Voice: {insert_text}"
+    append_to_log(formatted)
+    return f"Injected: {formatted}", 200
+
 @app.route("/dialogue")
 def get_dialogue():
     log = read_log()
