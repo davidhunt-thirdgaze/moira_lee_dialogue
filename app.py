@@ -4,45 +4,45 @@ from flask import Flask, render_template, request
 from openai import OpenAI
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load .env for API key
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = Flask(__name__)
 
-# Load seed memory
+# Load initial seed memory from file
 with open("seed_material.txt", "r", encoding="utf-8") as f:
     seed_memory = f.read().strip()
 
+# Paths
 log_path = "dialogue_log.txt"
 manual_insert_path = "third_voice_insert.txt"
 last_generation_time_file = "last_generation.txt"
 
-# Create initial log file if needed
+# Create initial log file if it doesn't exist
 if not os.path.exists(log_path):
     with open(log_path, "w", encoding="utf-8") as f:
         f.write("[SYSTEM SEED]\n" + seed_memory + "\n\n")
 
-# Append to log
+# Append a line to the dialogue log
 def append_to_log(text):
     with open(log_path, "a", encoding="utf-8") as f:
         f.write(text + "\n")
 
-# Inject Third Voice input if present
+# Inject manual Third Voice input (with full timestamp)
 def inject_third_voice():
     if os.path.exists(manual_insert_path):
         with open(manual_insert_path, "r", encoding="utf-8") as f:
             insert_text = f.read().strip()
         if insert_text:
-            timestamp = time.strftime("[%H:%M:%S]")
+            timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
             formatted = f"{timestamp} Third Voice: {insert_text}"
             append_to_log(formatted)
-            # Clear file after use
             with open(manual_insert_path, "w", encoding="utf-8") as f:
-                f.write("")
+                f.write("")  # Clear after injecting
 
-# Read the log file
+# Read the full dialogue log
 def read_log():
     with open(log_path, "r", encoding="utf-8") as f:
         return f.read()
@@ -62,6 +62,7 @@ def index():
 def get_dialogue():
     inject_third_voice()
     log = read_log()
+
     try:
         with open(last_generation_time_file, "r") as f:
             last_time = float(f.read())
@@ -85,10 +86,10 @@ def get_dialogue():
                 temperature=0.7
             )
             content = response.choices[0].message.content.strip()
-            timestamp = time.strftime("[%H:%M:%S]")
+            timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
             append_to_log(f"{timestamp} {content}")
         except Exception as e:
-            append_to_log(f"[ERROR] {e}")
+            append_to_log(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [ERROR] {e}")
 
     return read_log()
 
