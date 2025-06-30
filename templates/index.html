@@ -1,40 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Moira & Lee Dialogue</title>
-    <meta http-equiv="refresh" content="60">
+    <meta charset="UTF-8">
+    <title>Moira–Lee–Third Voice Dialogue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: monospace;
-            background-color: #111;
-            color: #f8f8f8;
-            padding: 40px;
+            background-color: #f9f9f9;
+            color: #222;
+            margin: 0;
+            padding: 2rem;
         }
-        pre {
+        .dialogue-container {
             white-space: pre-wrap;
-            background-color: #222;
-            padding: 20px;
-            border: 1px solid #555;
-            max-height: 80vh;
-            overflow-y: auto;
+            overflow-y: scroll;
+            max-height: 90vh;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            background: #fff;
         }
-        input[type="text"] {
-            width: 60%;
-            padding: 10px;
-            font-size: 1em;
-        }
-        input[type="submit"] {
-            padding: 10px 20px;
-            font-size: 1em;
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
-    <h2>Moira and Lee will speak here.<br>This space is a live recursive system.</h2>
-    <pre>{{ log }}</pre>
-    <form method="POST">
-        <input type="text" name="user_input" placeholder="Add your comment to the stream" required />
-        <input type="submit" value="Submit" />
-    </form>
+    <h1>Moira–Lee–Third Voice Dialogue</h1>
+    <div class="dialogue-container">
+        {{ dialogue }}
+    </div>
 </body>
 </html>
