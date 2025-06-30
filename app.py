@@ -23,8 +23,21 @@ if not os.path.exists(log_path):
 
 # Read log from file
 def read_log():
+    # Read and append from third_voice_insert.txt if not empty
+    insert_path = "third_voice_insert.txt"
+    if os.path.exists(insert_path):
+        with open(insert_path, "r", encoding="utf-8") as f:
+            insert_content = f.read().strip()
+        if insert_content:
+            timestamp = time.strftime("[%H:%M:%S]")
+            formatted = f"{timestamp} Third Voice: {insert_content}"
+            append_to_log(formatted)
+            # Clear the file so it's not reused
+            open(insert_path, "w", encoding="utf-8").close()
+
     with open(log_path, "r", encoding="utf-8") as f:
         return f.read()
+
 
 # Append to log file
 def append_to_log(text):
