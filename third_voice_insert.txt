@@ -1,0 +1,14 @@
+# Inject manual Third Voice input if present
+manual_insert_path = "third_voice_insert.txt"
+if os.path.exists(manual_insert_path):
+    with open(manual_insert_path, "r", encoding="utf-8") as f:
+        insert_text = f.read().strip()
+
+    if insert_text:
+        timestamp = time.strftime("[%H:%M:%S]")
+        formatted = f"{timestamp} Third Voice: {insert_text}"
+        append_to_log(formatted)
+
+        # Clear the file after inserting
+        with open(manual_insert_path, "w", encoding="utf-8") as f:
+            f.write("")
