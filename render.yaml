@@ -7,3 +7,10 @@ services:
     envVars:
       - key: OPENAI_API_KEY
         sync: false
+
+cronjobs:
+  - name: moira-lee-auto-update
+    schedule: "*/15 * * * *"
+    command: "python generate.py"
+    buildCommand: "pip install -r requirements.txt"
+
