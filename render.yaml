@@ -12,7 +12,8 @@ cronjobs:
   - name: moira-lee-auto-update
     schedule: "*/15 * * * *"
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python generate.py"
+    command: "python generate.py"
+
 
 
 
