@@ -2,18 +2,20 @@ services:
   - type: web
     name: moira_lee_dialogue_live
     env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
     plan: starter
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"   # ⛔ WRONG — change this to ↓
-    # Correct line:
-    command: "python app.py"
-    autoDeploy: true
+    branch: main
+    repo: https://github.com/davidhunt-thirdgaze/moira_lee_dialogue.git
 
   - type: cron
     name: moira_cron_trigger
     env: python
+    buildCommand: pip install -r requirements.txt
+    schedule: "0 */2 * * *"  # every 2 hours
+    command: python generate.py
     plan: starter
-    schedule: "*/15 * * * *"
-    buildCommand: "pip install -r requirements.txt"
-    command: "python generate.py"
+    branch: main
+    repo: https://github.com/davidhunt-thirdgaze/moira_lee_dialogue.git
+
 
