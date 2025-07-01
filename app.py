@@ -1,106 +1,77 @@
 from flask import Flask, render_template_string
 import os
-import openai
 import time
 
 app = Flask(__name__)
 
-# Set your OpenAI API key securely
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 LOG_FILE = "dialogue_log.txt"
-SEED_FILE = "seed_material.txt"
-MAX_HISTORY_LINES = 10
 
-# -------------------------
-# Utility Functions
-# -------------------------
+# Basic HTML template
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moira & Lee Dialogue</title>
+    <meta http-equiv="refresh" content="120"> <!-- Refresh every 2 minutes -->
+    <style>
+        body { font-family: monospace; background: #f7f7f7; padding: 20px; }
+        .line { margin: 5px 0; }
+        .moira { color: #d63384; }
+        .lee { color: #0d6efd; }
+        .third { color: #198754; }
+    </style>
+</head>
+<body>
+    <h1>Live Dialogue</h1>
+    {% if lines %}
+        {% for line in lines %}
+            <div class="line {{ line[1] }}">{{ line[0] }}</div>
+        {% endfor %}
+    {% else %}
+        <p>No dialogue yet.</p>
+    {% endif %}
+</body>
+</html>
+"""
 
-def read_seed():
-    if os.path.exists(SEED_FILE):
-        with open(SEED_FILE, "r", encoding="utf-8") as f:
-            return f.read().strip()
-    return ""
-
-def read_history():
-    if os.path.exists(LOG_FILE):
-        with open(LOG_FILE, "r", encoding="utf-8") as f:
-            return f.read()
-    return ""
-
-def write_line_to_history(line):
-    timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
-    full_line = f"{timestamp} {line}"
-    with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(full_line + "\n")
-
-def get_last_speaker(history):
-    lines = history.splitlines()
-    if not lines:
-        return "Moira"  # default if no previous speaker
-    last_line = lines[-1]
-    if "Lee:" in last_line:
-        return "Lee"
-    elif "Moira:" in last_line:
-        return "Moira"
+# Helper to parse speaker label from each line
+def classify_line(line):
+    if "Moira:" in line:
+        return (line.strip(), "moira")
+    elif "Lee:" in line:
+        return (line.strip(), "lee")
+    elif "Third Voice:" in line:
+        return (line.strip(), "third")
     else:
-        return "Moira"  # fallback
+        return (line.strip(), "")
 
-def generate_next_line(seed, history, speaker):
-    full_prompt = f"{seed}\n\nRecent dialogue:\n{history}\n\nNext line by {speaker}:"
-    response = openai.ChatCompletion.create(
-        model="gpt-4-1106-preview",  # or "gpt-4-turbo" if you're using it
-        messages=[
-            {"role": "system", "content": seed},
-            {"role": "user", "content": full_prompt}
-        ],
-        max_tokens=100,
-        temperature=0.8
-    )
-    content = response['choices'][0]['message']['content'].strip()
-    return f"{speaker}: {content}"
-
-def alternate_speaker(current):
-    return "Lee" if current == "Moira" else "Moira"
-
-# -------------------------
-# Dialogue Update Logic
-# -------------------------
-
-def update_dialogue():
-    seed = read_seed()
-    history = read_history()
-    current_speaker = alternate_speaker(get_last_speaker(history))
-    new_line = generate_next_line(seed, history, current_speaker)
-    write_line_to_history(new_line)
-
-# -------------------------
-# Flask Routes
-# -------------------------
+# Graceful fallback if log file doesn't exist yet
+def get_last_speaker():
+    try:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            for line in reversed(lines):
+                if line.startswith("[") and "]" in line:
+                    parts = line.split("] ")
+                    if len(parts) > 1:
+                        speaker_line = parts[1].strip()
+                        if ": " in speaker_line:
+                            speaker = speaker_line.split(": ")[0]
+                            return speaker
+    except FileNotFoundError:
+        return None
+    return None
 
 @app.route("/")
 def index():
-    return render_template_string("""
-        <h2>Moira–Lee Dialogue (Live Log)</h2>
-        <pre style="white-space: pre-wrap;">{{ history }}</pre>
-        <p><a href="/dialogue">Refresh Dialogue</a></p>
-    """, history=read_history())
-
-@app.route("/dialogue")
-def dialogue():
     try:
-        update_dialogue()
-        return render_template_string("""
-            <h2>Moira–Lee Dialogue (Updated)</h2>
-            <pre style="white-space: pre-wrap;">{{ history }}</pre>
-            <p><a href="/">Back</a></p>
-        """, history=read_history())
-    except Exception as e:
-        return f"<b>Error:</b><br><pre>{str(e)}</pre>"
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            raw_lines = f.readlines()[-30:]  # Last 30 lines
+    except FileNotFoundError:
+        raw_lines = []
 
-# -------------------------
-# Run (for local testing)
-# -------------------------
+    parsed_lines = [classify_line(line) for line in raw_lines if line.strip()]
+    return render_template_string(HTML_TEMPLATE, lines=parsed_lines)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=10000)
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
