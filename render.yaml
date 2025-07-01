@@ -1,17 +1,19 @@
 services:
   - type: web
-    name: moira-lee-live
+    name: moira_lee_dialogue_live
     env: python
+    plan: starter
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
+    startCommand: "python app.py"   # ⛔ WRONG — change this to ↓
+    # Correct line:
+    command: "python app.py"
+    autoDeploy: true
 
   - type: cron
-    name: moira-lee-trigger
+    name: moira_cron_trigger
     env: python
+    plan: starter
     schedule: "*/15 * * * *"
     buildCommand: "pip install -r requirements.txt"
     command: "python generate.py"
-
-
-
 
