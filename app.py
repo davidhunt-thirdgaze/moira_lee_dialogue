@@ -5,47 +5,12 @@ import time
 app = Flask(__name__)
 
 LOG_FILE = "dialogue_log.txt"
+MANUAL_INSERT_FILE = "third_voice_insert.txt"
 
-# Basic HTML template
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Moira & Lee Dialogue</title>
-    <meta http-equiv="refresh" content="120"> <!-- Refresh every 2 minutes -->
-    <style>
-        body { font-family: monospace; background: #f7f7f7; padding: 20px; }
-        .line { margin: 5px 0; }
-        .moira { color: #d63384; }
-        .lee { color: #0d6efd; }
-        .third { color: #198754; }
-    </style>
-</head>
-<body>
-    <h1>Live Dialogue</h1>
-    {% if lines %}
-        {% for line in lines %}
-            <div class="line {{ line[1] }}">{{ line[0] }}</div>
-        {% endfor %}
-    {% else %}
-        <p>No dialogue yet.</p>
-    {% endif %}
-</body>
-</html>
-"""
+def append_to_log(text):
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(text + "\n")
 
-# Helper to parse speaker label from each line
-def classify_line(line):
-    if "Moira:" in line:
-        return (line.strip(), "moira")
-    elif "Lee:" in line:
-        return (line.strip(), "lee")
-    elif "Third Voice:" in line:
-        return (line.strip(), "third")
-    else:
-        return (line.strip(), "")
-
-# Graceful fallback if log file doesn't exist yet
 def get_last_speaker():
     try:
         with open(LOG_FILE, "r", encoding="utf-8") as f:
@@ -53,25 +18,38 @@ def get_last_speaker():
             for line in reversed(lines):
                 if line.startswith("[") and "]" in line:
                     parts = line.split("] ")
-                    if len(parts) > 1:
-                        speaker_line = parts[1].strip()
-                        if ": " in speaker_line:
-                            speaker = speaker_line.split(": ")[0]
-                            return speaker
+                    if len(parts) > 1 and ": " in parts[1]:
+                        return parts[1].split(": ")[0]
     except FileNotFoundError:
         return None
     return None
 
+def inject_third_voice():
+    if os.path.exists(MANUAL_INSERT_FILE):
+        with open(MANUAL_INSERT_FILE, "r", encoding="utf-8") as f:
+            insert_text = f.read().strip()
+        if insert_text:
+            timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
+            entry = f"{timestamp} Third Voice: {insert_text}"
+            append_to_log(entry)
+            with open(MANUAL_INSERT_FILE, "w", encoding="utf-8") as f:
+                f.write("")
+
 @app.route("/")
 def index():
-    try:
-        with open(LOG_FILE, "r", encoding="utf-8") as f:
-            raw_lines = f.readlines()[-30:]  # Last 30 lines
-    except FileNotFoundError:
-        raw_lines = []
+    return "Moira–Lee–Third Voice Dialogue"
 
-    parsed_lines = [classify_line(line) for line in raw_lines if line.strip()]
-    return render_template_string(HTML_TEMPLATE, lines=parsed_lines)
+@app.route("/dialogue")
+def dialogue():
+    try:
+        inject_third_voice()
+        if not os.path.exists(LOG_FILE):
+            return "No dialogue yet."
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+        return render_template_string("<pre>{{ content }}</pre>", content=content)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(debug=True)
