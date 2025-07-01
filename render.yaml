@@ -1,15 +1,13 @@
 services:
   - type: web
-    name: moira-lee
+    name: moira-lee-live
     env: python
-    buildCommand: ""
-    startCommand: python app.py
-    envVars:
-      - key: OPENAI_API_KEY
-        sync: false
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
 
-cronjobs:
-  - name: moira-lee-auto-update
+  - type: cron
+    name: moira-lee-trigger
+    env: python
     schedule: "*/15 * * * *"
     buildCommand: "pip install -r requirements.txt"
     command: "python generate.py"
